@@ -155,7 +155,7 @@ def store_in_excel(data_dict_list, output_file):
 @app.route('/', methods=['GET'])
 def index():
     input_csv = "link.csv"
-    output_excel = "output_1.xlsx"
+    output_excel = "device.xlsx"
 
     base_urls_df = pd.read_csv(input_csv)
     base_urls = base_urls_df['BaseURL'].tolist()
