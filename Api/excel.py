@@ -1,25 +1,33 @@
 import pandas as pd
-from pymongo import MongoClient
 
-# Replace this with your MongoDB connection string
-mongo_uri = "mongodb+srv://stonecrazehelp:98879887stone@cluster0.uc9geon.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+def excel_to_dataframe(file_path, sheet_name=None):
+    """
+    Convert Excel data into a Pandas DataFrame.
 
-try:
-    # Connect to MongoDB Atlas
-    client = MongoClient(mongo_uri)
-    db = client['gadget']  # Replace 'your_database_name' with your desired database name
-    collection = db['device']  # Replace 'your_collection_name' with your desired collection name
+    Parameters:
+    - file_path (str): Path to the Excel file.
+    - sheet_name (str, optional): Name of the sheet to read. If not specified, reads the first sheet.
 
-    # Read Excel data
-    excel_file = 'device.xlsx'  # Replace with the correct path to your Excel file
-    df = pd.read_excel(excel_file)
+    Returns:
+    - pd.DataFrame: Pandas DataFrame containing the Excel data.
+    """
+    try:
+        # Read Excel file into a Pandas DataFrame
+        if sheet_name:
+            df = pd.read_excel(file_path, sheet_name=sheet_name)
+        else:
+            df = pd.read_excel(file_path)
+        
+        return df
+    except Exception as e:
+        print(f"Error reading Excel file: {e}")
+        return None
 
-    # Convert DataFrame to dictionary
-    data = df.to_dict(orient='records')
+# Example usage:
+file_path = "device.xlsx"
+sheet_name = "Sheet1"  # Replace with the name of your sheet
 
-    # Insert data into MongoDB
-    collection.insert_many(data)
-
-finally:
-    # Close the MongoDB connection
-    client.close()
+data_frame = excel_to_dataframe(file_path, sheet_name)
+if data_frame is not None:
+    print("Excel data converted to Pandas DataFrame:")
+    print(data_frame)
