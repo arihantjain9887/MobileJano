@@ -3,15 +3,33 @@ import styled from 'styled-components';
 import axios from 'axios';
 
 const AppContainer = styled.div`
+  flex-direction: column;
+  min-height: 75vh;
+  justify-content: center;
+  text-align: center;
+
+  .space {
+    margin-top: 50px;
+  }
+
+  .search-container {
+    margin-bottom: 2rem;
+    margin-top: 2.5rem;
+  }
+
   input[type="text"] {
     padding: 0.5rem;
+    margin-right: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
-    width: 15%;
-    margin-bottom: 1rem;
-    text-align: center;
+    width: 20%;
     font-size: 1rem;
-    
+    transition: all 0.3s ease;
+    margin-bottom: 1rem;
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 5px #007bff;
+    }
   }
 
   button {
@@ -22,44 +40,63 @@ const AppContainer = styled.div`
     border-radius: 5px;
     cursor: pointer;
     font-size: 1rem;
-    margin-right: 0.5rem;
-    
+    transition: all 0.3s ease;
+    &:hover {
+      background-color: #0056b3;
+    }
   }
 
   .results {
     margin-top: 1rem;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
   }
 
-  .pagination {
-    margin-top: 1rem;
-    text-align: center;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  th, td {
+  .device-card {
     border: 1px solid #ccc;
-    padding: 0.5rem;
+    color: #551a8b;
+    border-radius: 10px;
+    padding: 1rem;
+    margin: 1rem;
+    width: 50%;
+    font-size: 1.0rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    transition: all 0.3s ease;
     text-align: left;
-   
-    
   }
 
-  th {
-    background-color: #f2f2f2;
-    color:#333;
-    
-    
+  .device-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  .device-card > div {
+    margin-bottom: 0.5rem;
+  }
+
+  .show-more {
+    cursor: pointer;
+    color: #007bff;
+    margin-top: 0.5rem;
   }
 
   @media only screen and (max-width: 768px) {
+    .device-card {
+      width: calc(50% - 2rem);
+    }
     input[type="text"] {
       width: 80%;
-      margin: 0 auto;
-      display: block;
+    }
+  }
+
+  @media only screen and (max-width: 576px) {
+    .device-card {
+      width: calc(100% - 2rem);
+    }
+    input[type="text"] {
+      width: 90%;
     }
   }
 `;
@@ -67,14 +104,20 @@ const AppContainer = styled.div`
 function App() {
   const [deviceName, setDeviceName] = useState('');
   const [result, setResult] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [showMore, setShowMore] = useState({});
 
   const handleSearch = async () => {
     try {
       const response = await axios.get(`http://localhost:3000/api/gadget/device/${deviceName}`);
       setResult(response.data);
-      setCurrentPage(1); // Reset to first page after each search
+      // Initialize showMore state for each device
+      const initialShowMoreState = {};
+      if (response.data && response.data.documents && response.data.documents.length > 0) {
+        response.data.documents.forEach((document, index) => {
+          initialShowMoreState[index] = false;
+        });
+      }
+      setShowMore(initialShowMoreState);
     } catch (error) {
       console.error('Error fetching data:', error.message);
       setResult(null);
@@ -85,89 +128,51 @@ function App() {
     handleSearch();
   }, []);
 
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
+  const toggleShowMore = (index) => {
+    setShowMore((prevShowMore) => ({
+      ...prevShowMore,
+      [index]: !prevShowMore[index],
+    }));
   };
-
-  const nextPage = () => {
-    setCurrentPage((prevPage) => prevPage + 1);
-  };
-
-  const prevPage = () => {
-    setCurrentPage((prevPage) => prevPage - 1);
-  };
-
-  const filteredResults = result && result.documents
-    ? result.documents.slice((currentPage - 1) * pageSize, currentPage * pageSize)
-    : [];
-
-  const totalPages = Math.ceil(result?.documents?.length / pageSize);
-  let startPage = Math.max(1, currentPage - 1);
-  let endPage = Math.min(startPage + 2, totalPages);
-  startPage = Math.max(1, endPage - 2);
-  const pagesToShow = Array.from({ length: Math.min(totalPages, 3) }, (_, i) => startPage + i);
 
   return (
     <AppContainer>
-       <div className="pagination"><input
-        type="text"
-        id="deviceName"
-        label="Device name"
-        value={deviceName}
-        onChange={(e) => setDeviceName(e.target.value)}
-      />
-      <button onClick={handleSearch}>Search</button></div>
+      <h1 className="space">Search Your Phone</h1>
+      <div className="search-container">
+        <input
+          type="text"
+          id="deviceName"
+          placeholder="Enter device name"
+          value={deviceName}
+          onChange={(e) => setDeviceName(e.target.value)}
+        />
+        <button onClick={handleSearch}>Search</button>
+      </div>
       <div className="results">
-        {filteredResults.length > 0 ? (
-          <table>
-            <thead>
-              <tr>
-                <th>DeviceName</th>
-                <th>Announced</th>
-                <th>Status</th>
-                <th>NetworkTechnology</th>
-                <th>Weight</th>
-                <th>DisplayType</th>
-                <th>DisplaySize</th>
-                <th>OS</th>
-                <th>Chipset</th>
-                <th>CPU</th>
-                <th>Camera</th>
-                <th>Colors</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredResults.map((document, index) => (
-                <tr key={index}>
-                  <td>{document.DeviceName !== undefined ? document.DeviceName : 'Announcement not available'}</td>
-                  <td>{document.Announced !== undefined ? document.Announced : 'SIM information not available'}</td>
-                  <td>{document.Status !== undefined ? document.Status : 'DeviceName information not available'}</td>
-                  <td>{document.NetworkTechnology !== undefined ? document.NetworkTechnology : 'NetworkTechnology information not available'}</td>
-                  <td>{document.Weight !== undefined ? document.Weight : 'Weight information not available'}</td>
-                  <td>{document.DisplayType !== undefined ? document.DisplayType : 'DeviceName information not available'}</td>
-                  <td>{document.DisplaySize !== undefined ? document.DisplaySize : 'DeviceName information not available'}</td>
-                  <td>{document.OS !== undefined ? document.OS : 'DeviceName information not available'}</td>
-                  <td>{document.Chipset !== undefined ? document.Chipset : 'DeviceName information not available'}</td>
-                  <td>{document.CPU !== undefined ? document.CPU : 'DeviceName information not available'}</td>
-                  <td>{document.Camera !== undefined ? document.Camera : 'DeviceName information not available'}</td>
-                  <td>{document.Colors !== undefined ? document.Colors : 'DeviceName information not available'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        {result && result.documents && result.documents.length > 0 ? (
+          result.documents.map((document, index) => (
+            <div className="device-card" key={index}>
+              <div>
+                <strong>Device Name:</strong> {document.DeviceName !== undefined ? document.DeviceName : 'Announcement not available'}
+              </div>
+              {showMore[index] && (
+                <>
+                  {Object.entries(document).map(([key, value]) => (
+                    <div key={key}>
+                      <strong>{key}:</strong> {value || 'Information not available'}
+                    </div>
+                  ))}
+                </>
+              )}
+              <div className="show-more" onClick={() => toggleShowMore(index)}>
+                {showMore[index] ? 'Show Less' : 'Show More'}
+              </div>
+            </div>
+          ))
         ) : (
-          <p></p>
+          <p>No results found</p>
         )}
       </div>
-      {result && result.documents && result.documents.length > pageSize ? (
-        <div className="pagination">
-          <button onClick={prevPage} disabled={currentPage === 1}>Previous</button>
-          {pagesToShow.map((pageNumber) => (
-            <button key={pageNumber} onClick={() => handlePageChange(pageNumber)}>{pageNumber}</button>
-          ))}
-          <button onClick={nextPage} disabled={currentPage === totalPages}>Next</button>
-        </div>
-      ) : null}
     </AppContainer>
   );
 }

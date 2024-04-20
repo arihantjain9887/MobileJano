@@ -7,6 +7,7 @@ import Search from './components/Search';
 import Reviews from './components/Reviews';
 import News from './components/News';
 import About from'./components/about';
+import Compare from './components/Compare'
 
 const App = () => {
   return (
@@ -17,6 +18,7 @@ const App = () => {
           <Routes>
             <Route exact path="/" element={<Home />} />
             <Route path="/search" element={<Search />} />
+            <Route path="/Compare" element={<Compare />} />
             <Route path="/about" element={<About />} />
             <Route path="/reviews" element={<Reviews />} />
             <Route path="/news" element={<News />} />

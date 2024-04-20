@@ -12,9 +12,13 @@ const Header = () => {
         <Nav bar={bar}>
             <span><Link to="/">Home</Link></span>
             <span><a href="/Search">Search</a></span>
+            <span><a href="/Compare">Compare Device</a></span>
             <span><Link to="/About">About Us</Link></span>
             <span><Link to="/Reviews">Reviews</Link></span>
-            <span className='padding'><Link to="/News">News</Link></span>
+            <span><Link to="/News">News</Link></span>
+            <span><Link to="/"></Link></span>
+            <span><Link to="/"></Link></span>
+
         </Nav>
       <div onClick={() => setBar(!bar)} className="bars">
             <div className="bar" ></div>   
@@ -140,5 +144,9 @@ const Nav = styled.div`
                 opacity: 0.7;
             }
         }
+    }
+    a:hover {
+      text-decoration: underline;
+      color: yellow;
     }
 `
